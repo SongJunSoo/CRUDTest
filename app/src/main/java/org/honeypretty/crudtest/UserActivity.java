@@ -23,78 +23,60 @@ public class UserActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user);
-        //http://172.16.2.11:52273/user
         new LoadUserList().execute("http://172.16.2.11:52273/user");
     }
 
-    public void addUser(View view){
-
+    public void addUser(View view) {
 
     }
 
-    // Alt + Enter를 누르고 Implement를 설정해 주었다.
-    class LoadUserList extends AsyncTask<String, String, String>{
-
+    class LoadUserList extends AsyncTask<String,String,String> {
         ProgressDialog dialog = new ProgressDialog(UserActivity.this);
-
-        // Ctrl + O 누르고 추가해 준다.
         @Override
         protected void onPreExecute() {
-            dialog.setMessage("사용자 목록 로딩중...");
+            dialog.setMessage("사용자 목록 로딩 중...");
             dialog.show();
         }
-
         @Override
-        protected void onPostExecute(String s) { // s --> 서버에서 받은 JSON 문자열
-
+        protected void onPostExecute(String s) {//s-->서버에서 받은 JSON문자열
             dialog.dismiss();
-
-            try { // JSON파싱 --> ListView에 출력
-
+            try {//JSON 파싱 --> ListView에 출력
                 JSONArray array = new JSONArray(s);
                 ArrayList<String> strings = new ArrayList<String>();
-                for(int i = 0; i < array.length(); i++){ // JSON배열에서 이름 추출
+                for (int i = 0; i < array.length(); i++) {//JSON배열에서 이름 추출
                     JSONObject obj = array.getJSONObject(i);
                     strings.add(obj.getString("name"));
                 }
-
                 ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                        UserActivity.this, android.R.layout.simple_list_item_1, strings);
+                        UserActivity.this, android.R.layout.simple_list_item_1,strings);
                 ListView listView = (ListView)findViewById(R.id.listview);
                 listView.setAdapter(adapter);
-
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-
         @Override
         protected String doInBackground(String... params) {
-
             StringBuilder output = new StringBuilder();
-            try{
+            try {
                 URL url = new URL(params[0]);
                 HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-                if(conn != null){
+                if (conn != null) {
                     conn.setConnectTimeout(10000);
                     conn.setRequestMethod("GET");
-                    //conn.setDoInput(true);
-                    //conn.setDoOutput(true);
+                    //conn.setDoInput(true); conn.setDoOutput(true);
                     BufferedReader reader = new BufferedReader(
                             new InputStreamReader(conn.getInputStream()));
                     String line = null;
-                    while(true){
+                    while(true) {
                         line = reader.readLine();
-                        if(line == null) break;
+                        if (line == null) break;
                         output.append(line);
                     }
                     reader.close();
                     conn.disconnect();
                 }
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-
+            } catch (Exception e) { e.printStackTrace(); }
             return output.toString();
         }
     }
